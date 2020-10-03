@@ -6,11 +6,18 @@ Example board: https://www.aliexpress.com/item/32998900007.html?spm=a2g0o.produc
 Make sure your pin assignments match the suppliers pin-outs.
 
 #define LoRA_SCK   5
+
 #define LoRA_MISO 19
+
 #define LoRA_MOSI 27
+
 #define LoRA_CS   18
+
 #define LoRA_RST  14
+
 #define LoRA_IRQ  26
+
+e.g. find LoRa_IRQ on diagram in yello, it's on GPIO-26 so use 26
 
 Match pins defined in yellow wioth programme definitions
 
