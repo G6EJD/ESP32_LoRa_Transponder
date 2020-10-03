@@ -1,15 +1,11 @@
 # ESP32_LoRa_Transponder
 Using a pair of ESP32 Lora Modules as a pair of transponders.
 
-*** Use the same code on both untis, mabybe change the name of each unit accordingly:
+*** Use the same code on both units, maybe change the name of each unit accordingly:
 
-Unit-1 name defined with:
+Unit-1 name defined with: String deviceID = "Transponder-1";
 
-String deviceID    = "Transponder-1";
-
-Unit-2 name defined with:
-
-String deviceID    = "Transponder-2";
+Unit-2 name defined with: String deviceID = "Transponder-2";
 
 Example board: https://www.aliexpress.com/item/32998900007.html?spm=a2g0o.productlist.0.0.5635e39eYmdiRh&algo_pvid=0a7dc48e-cef0-457e-97c4-9cdbafd57469&algo_expid=0a7dc48e-cef0-457e-97c4-9cdbafd57469-19&btsid=0b0a187916017374115284728ec8c7&ws_ab_test=searchweb0_0,searchweb201602_,searchweb201603
 
