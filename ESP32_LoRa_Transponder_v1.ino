@@ -19,14 +19,15 @@
 
 #define diagnosticsMode false // use 'true' for full diadnostics information like signal strength (RSSI), signal-to-noise ratio (SNR), etc
 
-String deviceID    = "Transponder-1";
+String deviceID    = "Transponder-2";
 
 byte   msgCount      = 0;     // count of outgoing messages
 byte   localAddress  = 0xFF;  // address of this device
 byte   remoteAddress = 0xFF;  // destination to send to
 long   lastSendTime  = 0;     // last send time
-int    interval      = 1000;  // interval between sending in milli-seconds
+int    interval      = 10000; // interval between sending in milli-seconds
 int    counter       = 0;     // a simple message sent counter
+bool   respond       = true;
 
 //#################################################################################################
 void setup() {
@@ -37,14 +38,18 @@ void setup() {
 }
 //#################################################################################################
 void loop() {
-  if (millis() - lastSendTime > interval) {
+  if (respond == true) {
     String message = deviceID + " message: " + String(counter);   // form a message to send
     sendMessage(message);                                         // send the message
     Serial.println("Sending from  : " + message);
     counter++;
-    lastSendTime = millis();                                      // record time when sent
+    respond = false;
   }
   // parse for a packet, and call onReceive with the result:
+  if (millis() - lastSendTime > interval) { // Reset the link if there was a missed signal
+    lastSendTime = millis();
+    respond = true;
+  }
   onReceive(LoRa.parsePacket());
 }
 //#################################################################################################
@@ -57,10 +62,13 @@ void sendMessage(String outgoing) {
   LoRa.print(outgoing);                  // add payload
   LoRa.endPacket();                      // finish packet and send it
   msgCount++;                            // increment message ID
+  blinkLED(2, 50);                       // Flash on-board LED to denote sending message
 }
 //#################################################################################################
 void onReceive(int packetSize) {
   if (packetSize == 0) return;           // if no data payload received, return
+  respond = true;
+  lastSendTime = millis();
   // read packet header bytes:
   int recipient       = LoRa.read();     // get recipient address
   byte sender         = LoRa.read();     // get sender address
@@ -80,7 +88,7 @@ void onReceive(int packetSize) {
     return;                              // skip rest of function
   }
   // if message is for this device, or a broadcast, print details:
-  blinkLED(2);                           // Flash on-board LED to denote received message
+  blinkLED(2, 400);                      // Flash on-board LED to denote received message
   if (diagnosticsMode) Serial.println("Received from : 0x" + String(sender, HEX));
   if (diagnosticsMode) Serial.println("Sent to       : 0x" + String(recipient, HEX));
   if (diagnosticsMode) Serial.println("Message ID    : " + String(incomingMsgId));
@@ -91,12 +99,12 @@ void onReceive(int packetSize) {
   if (diagnosticsMode) Serial.println();
 }
 //#################################################################################################
-void blinkLED(byte pin){
+void blinkLED(byte pin, int blinkdelay){
   pinMode(pin, OUTPUT);
   digitalWrite(pin, LOW);              // turn the LED off 
-  delay(200);                          // wait
+  delay(blinkdelay);                   // wait
   digitalWrite(pin, HIGH);             // turn the LED on (HIGH is on)
-  delay(200);                          // wait
+  delay(blinkdelay);                   // wait
   digitalWrite(pin, LOW);              // turn the LED off 
 }
 //#################################################################################################
