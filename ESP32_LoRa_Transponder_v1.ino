@@ -3,7 +3,7 @@
 
   The modules used are found here: https://www.aliexpress.com/item/32998900007.html?spm=a2g0o.productlist.0.0.5635e39eYmdiRh&algo_pvid=0a7dc48e-cef0-457e-97c4-9cdbafd57469&algo_expid=0a7dc48e-cef0-457e-97c4-9cdbafd57469-19&btsid=0b0a187916017374115284728ec8c7&ws_ab_test=searchweb0_0,searchweb201602_,searchweb201603_
   Refer to pin-out diagrame and yellow markers for LoRa pins used below
-  
+
 */
 
 #include <SPI.h>           // include libraries
@@ -14,6 +14,7 @@
 #define LoRA_CS   18
 #define LoRA_RST  14
 #define LoRA_IRQ  26
+#define LED_pin    2
 
 #define LoRaFrequency 433E6   // (433Mhz) use 433E6, 868E6 or 915E6 but depends on your module's chipset frequency 
 
@@ -26,6 +27,7 @@ byte   localAddress  = 0xFF;  // address of this device
 byte   remoteAddress = 0xFF;  // destination to send to
 long   lastSendTime  = 0;     // last send time
 int    interval      = 10000; // interval between sending in milli-seconds
+int    transpondRate = 1000;  // rate of transponding
 int    counter       = 0;     // a simple message sent counter
 bool   respond       = true;
 
@@ -62,7 +64,7 @@ void sendMessage(String outgoing) {
   LoRa.print(outgoing);                  // add payload
   LoRa.endPacket();                      // finish packet and send it
   msgCount++;                            // increment message ID
-  blinkLED(2, 50);                       // Flash on-board LED to denote sending message
+  blinkLED(LED_pin, transpondRate/10);   // qucik flash of on-board LED to denote sending message
 }
 //#################################################################################################
 void onReceive(int packetSize) {
@@ -88,27 +90,28 @@ void onReceive(int packetSize) {
     return;                              // skip rest of function
   }
   // if message is for this device, or a broadcast, print details:
-  blinkLED(2, 400);                      // Flash on-board LED to denote received message
+  blinkLED(LED_pin, transpondRate);      // slow flash on-board LED to denote received message
   if (diagnosticsMode) Serial.println("Received from : 0x" + String(sender, HEX));
   if (diagnosticsMode) Serial.println("Sent to       : 0x" + String(recipient, HEX));
   if (diagnosticsMode) Serial.println("Message ID    : " + String(incomingMsgId));
   if (diagnosticsMode) Serial.println("Message length: " + String(incomingLength));
-                       Serial.println("Received from : " + incoming);
+  Serial.println("Received from : " + incoming);
+  Serial.println();
   if (diagnosticsMode) Serial.println("RSSI          : " + String(LoRa.packetRssi()));
   if (diagnosticsMode) Serial.println("Snr           : " + String(LoRa.packetSnr()));
   if (diagnosticsMode) Serial.println();
 }
 //#################################################################################################
-void blinkLED(byte pin, int blinkdelay){
+void blinkLED(byte pin, int blinkdelay) {
   pinMode(pin, OUTPUT);
-  digitalWrite(pin, LOW);              // turn the LED off 
-  delay(blinkdelay);                   // wait
+  digitalWrite(pin, LOW);              // turn the LED off
+  delay(blinkdelay / 2);               // wait
   digitalWrite(pin, HIGH);             // turn the LED on (HIGH is on)
-  delay(blinkdelay);                   // wait
-  digitalWrite(pin, LOW);              // turn the LED off 
+  delay(blinkdelay / 2);               // wait
+  digitalWrite(pin, LOW);              // turn the LED off
 }
 //#################################################################################################
-String startLoRa(){
+String startLoRa() {
   SPI.begin(LoRA_SCK, LoRA_MISO, LoRA_MOSI, LoRA_CS);       // override the default CS, reset, and IRQ pins (optional)
   LoRa.setPins(LoRA_CS, LoRA_RST, LoRA_IRQ);                // assign pins for LoRa module
   //LoRa.setSpreadingFactor(8);                             // ranges from 6-12,default 7 see API docs, this changes bandwidth used
