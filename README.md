@@ -17,8 +17,7 @@ Make sure your pin assignments match the suppliers pin-outs.
 
 #define LoRA_IRQ  26
 
-e.g. find LoRa_IRQ on diagram in yello, it's on GPIO-26 so use 26
+e.g. find LoRa_IRQ on diagram in yellow, it's on GPIO-26 so use 26
 
-Match pins defined in yellow wioth programme definitions
-
+Match pins defined in yellow with programme definitions:
 ![alt_text, width="200"](/ESP32_LORA.jpg)
