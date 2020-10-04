@@ -5,7 +5,6 @@
   Refer to pin-out diagrame and yellow markers for LoRa pins used below
 
 */
-
 #include <SPI.h>           // include libraries
 #include <LoRa.h>
 #define LoRA_SCK   5
@@ -20,27 +19,27 @@
 
 #define diagnosticsMode false // use 'true' for full diadnostics information like signal strength (RSSI), signal-to-noise ratio (SNR), etc
 
-String deviceID    = "Transponder-2";
+String deviceID    = "Transponder-1";
 
 byte   msgCount      = 0;     // count of outgoing messages
-byte   localAddress  = 0xFF;  // address of this device
-byte   remoteAddress = 0xFF;  // destination to send to
-long   lastSendTime  = 0;     // last send time
-int    interval      = 10000; // interval between sending in milli-seconds
-int    transpondRate = 1000;  // rate of transponding
+byte   localAddress  = 0xFF;  // address of this device, you casn change this to maske it filter out multiple transponders, 0xFF is a broadcast address
+byte   remoteAddress = 0xFF;  // destination to send to, 0xFF is broadcast, so all transponders receive the message
+long   lastSendTime  = 0;     // last send time value
+int    interval      = 5000;  // interval between link resync in milli-seconds
+int    transpondRate = 1000;  // rate of transponding, currently sets the LED flash timing!
 int    counter       = 0;     // a simple message sent counter
-bool   respond       = true;
+bool   respond       = true;  // to respond or not
 
 //#################################################################################################
 void setup() {
-  Serial.begin(115200);     // initialize serial
+  Serial.begin(115200);     // initialise serial
   while (!Serial);
   Serial.println("LoRa Transponder");
   Serial.println(startLoRa());
 }
 //#################################################################################################
 void loop() {
-  if (respond == true) {
+  if (respond) {
     String message = deviceID + " message: " + String(counter);   // form a message to send
     sendMessage(message);                                         // send the message
     Serial.println("Sending from  : " + message);
@@ -48,9 +47,10 @@ void loop() {
     respond = false;
   }
   // parse for a packet, and call onReceive with the result:
-  if (millis() - lastSendTime > interval) { // Reset the link if there was a missed signal
+  if (millis() - lastSendTime > interval) { // Reset the link if it has gone out of sync or a missed response
     lastSendTime = millis();
     respond = true;
+    delay(random(3)*1000); // Wait a random time to prevent transponder transmission collions
   }
   onReceive(LoRa.parsePacket());
 }
@@ -102,15 +102,6 @@ void onReceive(int packetSize) {
   if (diagnosticsMode) Serial.println();
 }
 //#################################################################################################
-void blinkLED(byte pin, int blinkdelay) {
-  pinMode(pin, OUTPUT);
-  digitalWrite(pin, LOW);              // turn the LED off
-  delay(blinkdelay / 2);               // wait
-  digitalWrite(pin, HIGH);             // turn the LED on (HIGH is on)
-  delay(blinkdelay / 2);               // wait
-  digitalWrite(pin, LOW);              // turn the LED off
-}
-//#################################################################################################
 String startLoRa() {
   SPI.begin(LoRA_SCK, LoRA_MISO, LoRA_MOSI, LoRA_CS);       // override the default CS, reset, and IRQ pins (optional)
   LoRa.setPins(LoRA_CS, LoRA_RST, LoRA_IRQ);                // assign pins for LoRa module
@@ -121,5 +112,14 @@ String startLoRa() {
     return "LoRa init failed...";                           // if failed, report it back
   }
   return "LoRa init succeeded.";                            // succeeded
+}
+//#################################################################################################
+void blinkLED(byte pin, int blinkdelay) {
+  pinMode(pin, OUTPUT);
+  digitalWrite(pin, LOW);              // turn the LED off
+  delay(blinkdelay / 2);               // wait
+  digitalWrite(pin, HIGH);             // turn the LED on (HIGH is on)
+  delay(blinkdelay / 2);               // wait
+  digitalWrite(pin, LOW);              // turn the LED off
 }
 //#################################################################################################
