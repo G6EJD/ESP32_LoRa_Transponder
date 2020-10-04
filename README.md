@@ -1,7 +1,13 @@
 # ESP32_LoRa_Transponder
 Using a pair of ESP32 Lora Modules as a pair of transponders.
 
-*** Use the same code on both units, maybe change the name of each unit accordingly:
+Each module is programmed with the same code. Both begin by waiting a pre-determined amount of time, then initiate the link by sending a message, the correspond transponder then receives the message and acknowledges receipt with a return message and so the process repeats.
+
+You can use this method; for example, to test range between two LoRa modules by taking one module away, perhaps battery powered and watching the on-board LED blink to denote it received a response from the other unit.
+
+*** Use the same code on both units, maybe change the name of each unit accordingly ***
+
+It is useful to name each transponder differently so they can be identified 
 
 Unit-1 name defined with: String deviceID = "Transponder-1";
 
